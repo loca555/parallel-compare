@@ -2,6 +2,13 @@ PARALLEL — COMPARE WEBSITES AND MOCKUPS
 
 Live site: https://parallel-compare.onrender.com/
 
+This address now opens the server-browser version:
+https://parallel-browser-l7t7.onrender.com/
+Its current source is https://github.com/loca555/parallel-browser.
+The static index.html in this repository is the migration entry point.
+The portable copy below remains an offline tool for images and standalone HTML;
+live website browser panels require the server-browser version.
+
 Two empty panels open by default. Add or remove panels as needed, up to eight.
 Only open panels use space. Drag a divider or use Equal widths to rebalance.
 

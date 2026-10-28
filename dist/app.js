@@ -78,18 +78,27 @@ function resetPane(pane) {
 function bridgeCode(channel) {
  return `(function(){const channel=${JSON.stringify(channel)};let suppressed=0,queued=false;function metrics(){const d=document.documentElement,b=document.body;const h=Math.max(d.scrollHeight,b?b.scrollHeight:0);return{height:h,viewport:innerHeight,ratio:scrollY/Math.max(1,h-innerHeight)}}function send(){queued=false;parent.postMessage(Object.assign({type:'parallel-metrics',channel:channel},metrics()),'*')}addEventListener('scroll',function(){if(performance.now()<suppressed)return;if(!queued){queued=true;requestAnimationFrame(send)}},{passive:true});addEventListener('message',function(e){if(e.source!==parent||!e.data||e.data.type!=='parallel-command'||e.data.channel!==channel)return;if(e.data.action==='scroll'){suppressed=performance.now()+180;const m=metrics();scrollTo(0,Math.max(0,Math.min(1,Number(e.data.ratio)||0))*Math.max(0,m.height-innerHeight))}if(e.data.action==='metrics')send()});addEventListener('load',send);addEventListener('resize',send);if(window.ResizeObserver&&document.body)new ResizeObserver(send).observe(document.body);document.addEventListener('click',function(e){const a=e.target.closest&&e.target.closest('a[href]');if(a&&!a.getAttribute('href').startsWith('#'))e.preventDefault()},true);send()})();`;
 }
+function hasSeparateResources(raw) {
+ const doc = new DOMParser().parseFromString(raw, 'text/html');
+ const embedded = value => !value.trim() || /^(data:|#)/i.test(value.trim());
+ if ($$('script[src],link[rel="stylesheet"][href]', doc).some(el => (el.getAttribute('src') || el.getAttribute('href') || '').trim())) return true;
+ if ($$('img[src],source[src],video[src],audio[src],video[poster]', doc).some(el => !embedded(el.getAttribute('src') || el.getAttribute('poster') || ''))) return true;
+ const css = $$('style,[style]', doc).map(el => el.tagName === 'STYLE' ? el.textContent : el.getAttribute('style')).join('\n');
+ if (/@import\b/i.test(css)) return true;
+ return [...css.matchAll(/url\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\s*\)/gi)].some(match => !embedded(match[1] ?? match[2] ?? match[3] ?? ''));
+}
 function prepareHtml(raw, pane) {
  const doc = new DOMParser().parseFromString(raw, 'text/html');
- const nonce = uid().replace(/-/g, ''); pane.channel = uid();
+ pane.channel = uid();
  $$('base,meta[http-equiv],iframe,object,embed', doc).forEach(el => el.remove());
  $$('*', doc).forEach(el => { [...el.attributes].forEach(attr => { if (/^on/i.test(attr.name)) el.removeAttribute(attr.name); }); });
- $$('script', doc).forEach(script => script.remove());
+ $$('script[src]', doc).forEach(script => script.remove());
  $$('link[rel="stylesheet"],link[rel="preload"],link[rel="prefetch"],link[rel="icon"]', doc).forEach(el => el.remove());
  const policy = doc.createElement('meta'); policy.httpEquiv = 'Content-Security-Policy';
- policy.content = "default-src 'none'; script-src 'nonce-" + nonce + "'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none';";
+ policy.content = "default-src 'none'; script-src 'unsafe-inline'; script-src-attr 'none'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none';";
  doc.head.prepend(policy);
  const style = doc.createElement('style'); style.textContent = 'html{scroll-behavior:auto!important}::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-thumb{background:#89929e77;border-radius:4px}'; doc.head.append(style);
- const bridge = doc.createElement('script'); bridge.setAttribute('nonce', nonce); bridge.textContent = bridgeCode(pane.channel); doc.body.append(bridge);
+ const bridge = doc.createElement('script'); bridge.textContent = bridgeCode(pane.channel); doc.body.append(bridge);
  return '<!doctype html>\n' + doc.documentElement.outerHTML;
 }
 async function renderSource(pane, source, preserveRatio = 0) {
@@ -115,8 +124,8 @@ async function renderSource(pane, source, preserveRatio = 0) {
   } else {
    frame.setAttribute('sandbox', 'allow-scripts');
    frame.srcdoc = prepareHtml(source.html, pane);
-   $('.source-caption', pane.el).textContent = 'HTML · local preview';
-   status(pane, 'HTML · scripts and external resources disabled');
+   $('.source-caption', pane.el).textContent = 'Interactive HTML · local preview';
+   status(pane, 'HTML · embedded interactions enabled');
   }
   frame.addEventListener('load', () => { if (generation !== pane.generation) return; layout(pane); if (supported(pane)) setTimeout(() => applyScroll(pane, preserveRatio), 80); });
   pane.shell.append(frame); layout(pane);
@@ -144,8 +153,13 @@ async function loadFile(pane, file) {
  } else if (/\.html?$/i.test(file.name) || file.type === 'text/html') {
   const generation = ++pane.generation;
   const html = await file.text(); if (generation !== pane.generation) return;
+  if (hasSeparateResources(html)) {
+   if (!pane.source) status(pane, 'Missing assets · use a self-contained HTML', 'error');
+   toast('This HTML needs separate CSS, scripts or images. Upload a self-contained HTML with all assets embedded, or open the published website URL.');
+   return;
+  }
   await renderSource(pane, {kind:'html',html,name:file.name,isFile:true}); cleanupBlobs();
-  toast('HTML opened locally. Scripts and external resources are disabled; use a self-contained file.');
+  toast('HTML opened locally with embedded interactions. External resources are not loaded.');
  } else toast('Choose an image or HTML file. PDF, ZIP and Figma source files are not supported.');
 }
 function setupPane(pane) {

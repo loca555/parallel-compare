@@ -1,62 +1,18 @@
-ПАРАЛЛЕЛЬ — СРАВНЕНИЕ САЙТОВ И МАКЕТОВ
-28 октября 2026
+PARALLEL — COMPARE WEBSITES AND MOCKUPS
 
-Быстрый запуск: откройте portable.html двойным щелчком в браузере.
-Он содержит шрифты, код и встроенный пример Augur. Установка не нужна.
-Версия dist/index.html предназначена для статического HTTP/HTTPS-сервера.
+Live site: https://parallel-compare.onrender.com/
 
-В каждую панель можно независимо добавить:
-- адрес сайта по HTTP или HTTPS;
-- PNG / JPEG / WebP / GIF / SVG / AVIF / BMP;
-- автономный HTML-файл со встроенными CSS, изображениями и шрифтами.
+Two empty panels open by default. Add or remove panels as needed, up to eight.
+Only open panels use space. Drag a divider or use Equal widths to rebalance.
 
-Файлы можно выбрать кнопкой «Файл» или перетащить в панель.
-Максимальный размер одного файла — 50 МБ. Файлы остаются в браузере.
-HTML открывается в изолированном iframe: авторские скрипты, обработчики
-событий и внешние ресурсы не выполняются и не загружаются.
-Встроенный подготовленный пример Augur интерактивен.
+Load HTTPS websites, images or self-contained HTML files. Files stay in the
+browser. Uploaded HTML scripts and external resources are disabled.
+Images and local HTML can scroll together; external websites scroll independently.
+Some websites block iframe embedding. Use the open-in-new-tab button or a screenshot.
 
+Deployment: Render Static Site, branch main, build command: echo ready,
+publish directory: dist. No dependencies, backend or environment variables needed.
+For this public Git repository connection, deploy updates from the Render Dashboard.
 
-ПАНЕЛИ ПО ТРЕБОВАНИЮ
-По умолчанию открыты две панели на всю рабочую ширину.
-«Добавить панель» добавляет третью и последующие, до восьми.
-Крестик убирает панель целиком; оставшиеся занимают освободившееся место.
-Заранее зарезервированных пустых слотов нет. «Поровну» выравнивает ширину.
-При одной панели она занимает всю ширину; последнюю панель убрать нельзя.
-Синхронизация связывает все загруженные изображения/HTML, пустые панели
-ей не мешают. Внешние URL прокручиваются независимо.
-
-Что умеет инструмент:
-- от 1 до 8 панелей рядом с разделителями между открытыми панелями;
-- обмен двух версий местами и циклический сдвиг источников при 3+ панелях;
-- независимый масштаб от 25% до 200% и вписывание по ширине;
-- ширина экрана сайтов/HTML 1440, 768, 390 px либо собственное значение;
-- связанная прокрутка изображений и HTML по доле высоты;
-- общая шкала прокрутки, начало и конец страниц;
-- режим «Фокус», скрывающий лишние панели; Escape возвращает обычный вид;
-- клавиатурное изменение разделителя стрелками, Home возвращает 50/50.
-
-Ограничения веб-версии:
-- Сайт может запрещать встраивание через X-Frame-Options или CSP.
-  Инструмент не обходит этот запрет: используйте снимок или обычный просмотр.
-- Внутренней прокруткой чужих сайтов браузер управлять не позволяет.
-  Синхронизация включается для двух изображений/HTML, а не внешних URL.
-- Изменение ширины снимка не перестраивает его вёрстку. Для проверки
-  адаптивности используйте сайт или HTML.
-- Для сложного локального проекта с отдельными зависимостями сначала
-  запустите его HTTP-сервер и укажите URL. Загрузка папок, ZIP, PDF и Figma
-  не реализована.
-
-Пример Augur:
-- полный снимок исходного augur-web-lab.vercel.app/ryan-augus/;
-- полный снимок концепта из предыдущей работы;
-- автономный интерактивный HTML концепта.
-Снимок исходника собран из реальных экранов прокрутки; анимация и служебный
-переключатель версий зафиксированы в момент съёмки.
-
-Справочные источники по ограничениям:
-https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe
-https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy
-
-В приложении нет аналитики, серверной загрузки файлов и автосохранения URL.
-Обычное открытие внешнего сайта, разумеется, обращается к этому сайту.
+Open dist/portable.html or Parallel.html for a self-contained offline copy.
+Font licenses are included in dist/assets/.
